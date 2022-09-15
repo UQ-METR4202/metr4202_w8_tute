@@ -27,6 +27,7 @@ paginate: true
 # METR4202
 ## Robotics & Automation
 ### Week 8: [TUT] - Dynamics
+#### (Solutions)
 
 ---
 
@@ -35,7 +36,6 @@ paginate: true
   - Determining the Equations of Motion
     - Euler-Lagrange Approach
     - Newton-Euler Approach
-  - Calculating the Energy (Lagrangian + Hamiltonian)
 
 
 ---
@@ -124,7 +124,7 @@ $$
 
 ---
 
-## RRP - Potential Energy
+## RP - Potential Energy
 ### Question 1b)
 
 For our case, we have
@@ -425,12 +425,12 @@ $$
 u_{1}=x,\ u_{2}=y, 
 $$
 $$
-J_{ij}(\theta) = \frac{du_{i}}{d\theta_{j}}(\theta)
+J_{ij}(\theta) = \frac{\partial u_{i}}{\partial \theta_{j}}(\theta)
 $$
 $$
 \dot{u}_{i}=\sum_{j}J_{ij} \dot{\theta}_{j}
 $$
-Note that $u_{1}=x_{2}$ and $u_{2}=y_{2}$, for the end-effector.c
+Note that $u_{1}=x_{n}$ and $u_{2}=y_{n}$, for the end-effector.
 
 ---
 
@@ -574,3 +574,91 @@ Finally, notice that this approaches a point mass $\mathfrak{m}_{2}$ when $\thet
 ---
 
 # The Newton-Euler approach
+---
+
+# Notation
+Some important notation
+$$
+\begin{aligned}
+\hat{\mathcal{A}}_{i} &= (\hat{\omega}^{\hat{\mathcal{A}}}_{i},\ \hat{v}^{\hat{\mathcal{A}}}_{i}) \\
+\hat{\mathcal{S}}_{i} &= (\hat{\omega}^{\hat{\mathcal{S}}}_{i},\ \hat{v}^{\hat{\mathcal{S}}}_{i}) \\
+\mathcal{V}_{i} &= (\omega_{i},\ v_{i}) \\
+\dot{\mathcal{V}}_{i} &= (\dot{\omega}_{i},\ \dot{v}_{i}) \\
+T_{i,i-1} &=
+\begin{bmatrix}
+R_{i,i-1} & p_{i,i-1} \\
+0 & 1
+\end{bmatrix}
+\end{aligned}
+$$
+---
+
+## Given Conditions
+Given $\mathcal{F}_{n+1}=\mathcal{F}_{\mathrm{ext}}$ and $\tau$
+## Constants
+These can be pre-calculated before the simulation.
+$$
+\begin{aligned}
+M_{ij} &= M_{0,i}^{-1}M_{0,j} \\
+M_{i,i-1} &= M_{0,i}^{-1}M_{0,i-1} \\
+\hat{\mathcal{A}}_{i} &= \mathrm{Ad}_{M_{0,i}^{-1}}(\mathcal{S}_{i})\\
+T_{n+1,n} &= M_{n,n+1}^{-1}
+\end{aligned}
+$$
+
+---
+
+## NE Algorithm
+### Forward Propagation of Acceleration/Velocity
+For $i=1$ ton $n$ do
+$$
+\begin{aligned}
+T_{i,i-1} &= e^{-[\hat{\mathcal{A}}_{i}]\theta_{i}}M_{i,i-1} \\
+\mathcal{V}_{i} &= \mathrm{Ad}_{T_{i,i-1}}(\mathcal{V}_{i-1})+\hat{\mathcal{A}}_{i}\dot{\theta} \\
+\dot{\mathcal{V}}_{i} &= \mathrm{Ad}_{T_{i,i-1}}(\dot{\mathcal{V}}_{i-1})+\hat{\mathcal{A}}_{i}\ddot{\theta} + \mathrm{ad}_{\mathcal{V}_{i}}(\hat{\mathcal{A}}_{i})\dot{\theta}_{i}
+\end{aligned}
+$$
+
+---
+## Backward Propagation of Forces
+For $i=n$ to $1$ do
+$$
+\begin{aligned}
+\mathcal{F}_{i} &=\mathrm{Ad}^{\top}_{T_{i+1,i}}(\mathcal{F}_{i+1})+\mathcal{G}_{i}\dot{\mathcal{V}}_{i} - \mathrm{ad}_{\mathcal{V}_{i}}^{\top}(\mathcal{G}_{i}\mathcal{V}_{i}) \\
+\tau_{i} &= \mathcal{F}_{i}^{\top}\hat{\mathcal{A}}_{i}
+\end{aligned}
+$$
+
+---
+
+# Decoupled Form for Angular Components
+$$
+\begin{aligned}
+R_{i,i-1}&=e^{-[\hat{\omega}^{\hat{\mathcal{A}}}_{i}]\theta_{i}}\hat{\omega}^{\hat{\mathcal{S}}}_{i} \\
+\omega_{i}&=R_{i,i-1}\omega_{i-1}+\hat{\omega}^{\hat{\mathcal{A}}}_{i}\dot{\theta} \\
+\dot{\omega}_{i}&=R_{i,i-1}\dot{\omega}_{i-1}+\hat{\omega}^{\hat{\mathcal{A}}}_{i}\ddot{\theta}+(\mathcal{\omega_{i}}\times\hat{\omega}^{\hat{\mathcal{A}}}_{i})\dot{\theta}_{i}
+\end{aligned}
+$$
+
+---
+
+# Using the NE-ID Algorithm
+- How can we use the Newton-Euler Inverse Dynamics algorithm to calculate the Mass matrix $M(\theta)$, as well as $c(\theta,\dot{\theta})$ and $g(\theta)$?
+
+---
+
+# Forward Dynamics Simulation
+Given a differential equation, derived from forward dynamics, how can we simulate a system's dynamics?
+
+$$
+\begin{aligned}
+\ddot{\theta}&=f(\theta, \dot{\theta}) \\
+\end{aligned}
+$$
+Recall that we can approximate the derivatives as:
+$$
+\begin{aligned}
+\ddot{\theta}&\approx\frac{\Delta \dot{\theta}}{\Delta t}= \frac{\dot{\theta}[k+1]-\dot{\theta}[k]}{t[k+1]-t[k]} \\
+\dot{\theta}&\approx\frac{\Delta \theta}{\Delta t}= \frac{\theta[k+1]-\theta[k]}{t[k+1]-t[k]}
+\end{aligned}
+$$
